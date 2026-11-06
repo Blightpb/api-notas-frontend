@@ -6,9 +6,9 @@ Este projeto é o front-end da atividade. O código do back-end está em outro r
 
 ## Links
 
-- **Aplicação online (Vercel):** https://SUA-URL.vercel.app
-- **Repositório do back-end:** https://github.com/SEU_USUARIO/api-notas-backend
-- **API online (Render):** https://SUA-URL.onrender.com/api/notes
+- **Aplicação online (Vercel):** http://api-notas-frontend.vercel.app
+- **Repositório do back-end:** https://github.com/blightpb/api-notas-backend
+- **API online (Render):** https://api-notas-backend.onrender.com/api/notes
 
 > Observação: o back-end usa o plano gratuito do Render, que suspende o serviço após um período sem uso. Se a lista de notas demorar a aparecer, aguarde cerca de 1 minuto e recarregue a página.
 
