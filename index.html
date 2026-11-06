@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notas</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', system-ui, sans-serif;
+            background: #f4f5fb;
+            color: #1f2333;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 2.5rem 1rem 4rem;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -.02em;
+            margin: 0 0 1.5rem;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 4px;
+            margin-top: .5rem;
+            border-radius: 4px;
+            background: #5b5bf0;
+        }
+
+        .form {
+            background: #ffffff;
+            border: 1px solid #e3e6f0;
+            border-radius: 14px;
+            box-shadow: 0 1px 2px rgba(20, 24, 50, .05), 0 6px 20px rgba(20, 24, 50, .06);
+            padding: 1.25rem;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            margin-bottom: .75rem;
+            padding: .75rem .9rem;
+            font: inherit;
+            font-size: .95rem;
+            color: #1f2333;
+            background: #f4f5fb;
+            border: 1px solid #e3e6f0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s, background .15s;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #7a8094;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #5b5bf0;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px #ececff;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .acoes {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font: inherit;
+            font-size: .85rem;
+            font-weight: 600;
+            padding: .6rem 1.1rem;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .15s, transform .1s, border-color .15s;
+        }
+
+        button:active {
+            transform: scale(.97);
+        }
+
+        .btn-primario {
+            background: #5b5bf0;
+            color: #fff;
+        }
+
+        .btn-primario:hover {
+            background: #4545d6;
+        }
+
+        .btn-secundario {
+            background: transparent;
+            color: #7a8094;
+            border-color: #e3e6f0;
+        }
+
+        .btn-secundario:hover {
+            color: #1f2333;
+            border-color: #7a8094;
+        }
+
+        #lista {
+            margin-top: 1.5rem;
+        }
+
+        .nota {
+            background: #ffffff;
+            border: 1px solid #e3e6f0;
+            border-left: 4px solid #5b5bf0;
+            border-radius: 14px;
+            box-shadow: 0 1px 2px rgba(20, 24, 50, .05), 0 6px 20px rgba(20, 24, 50, .06);
+            padding: 1rem 1.15rem;
+            margin-top: .85rem;
+            transition: transform .15s;
+        }
+
+        .nota:hover {
+            transform: translateY(-2px);
+        }
+
+        .nota strong {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .nota p {
+            margin: .4rem 0 .75rem;
+            color: #1f2333;
+            opacity: .85;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .nota small {
+            color: #7a8094;
+            font-size: .75rem;
+        }
+
+        .nota-acoes {
+            display: flex;
+            gap: .4rem;
+            margin-top: .85rem;
+        }
+
+        .nota-acoes button {
+            padding: .4rem .8rem;
+            font-size: .78rem;
+        }
+
+        .btn-editar {
+            background: #ececff;
+            color: #5b5bf0;
+        }
+
+        .btn-editar:hover {
+            border-color: #5b5bf0;
+        }
+
+        .btn-excluir {
+            background: #fdecec;
+            color: #e5484d;
+        }
+
+        .btn-excluir:hover {
+            border-color: #e5484d;
+        }
+
+        .vazio {
+            text-align: center;
+            color: #7a8094;
+            padding: 2rem 0;
+            font-size: .9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Minhas Notas</h1>
+
+    <div class="form">
+        <input id="titulo" placeholder="Título">
+        <textarea id="texto" placeholder="Texto"></textarea>
+        <div class="acoes">
+            <button id="btnSalvar" class="btn-primario" onclick="salvar()">Adicionar</button>
+            <button class="btn-secundario" onclick="cancelar()">Cancelar edição</button>
+        </div>
+    </div>
+
+    <div id="lista"></div>
+
+    <script>
+        const API = 'http://localhost:3000/api/notes'; // depois troque pela URL do Render
+        let notas = [];
+        let editandoId = null;
+
+        // evita que HTML digitado nas notas quebre a página
+        const esc = (s) => String(s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        async function carregar() {
+            const res = await fetch(API);
+            notas = await res.json();
+            const lista = document.getElementById('lista');
+
+            lista.innerHTML = notas.map(n => `
+      <div class="nota">
+        <strong>${esc(n.titulo)}</strong>
+        <p>${esc(n.texto)}</p>
+        <small>${new Date(n.criadoEm).toLocaleString('pt-BR')}</small>
+        <div class="nota-acoes">
+          <button class="btn-editar" onclick="editar('${n.id}')">Editar</button>
+          <button class="btn-excluir" onclick="excluir('${n.id}')">Excluir</button>
+        </div>
+      </div>`).join('');
+        }
+
+        async function salvar() {
+            const titulo = document.getElementById('titulo').value.trim();
+            const texto = document.getElementById('texto').value.trim();
+            if (!titulo || !texto) return alert('Preencha título e texto');
+
+            const url = editandoId ? `${API}/${editandoId}` : API;
+            await fetch(url, {
+                method: editandoId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo, texto })
+            });
+            cancelar();
+            carregar();
+        }
+
+        function editar(id) {
+            const n = notas.find(x => x.id === id);
+            editandoId = id;
+            document.getElementById('titulo').value = n.titulo;
+            document.getElementById('texto').value = n.texto;
+            document.getElementById('btnSalvar').textContent = 'Salvar alterações';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('titulo').focus();
+        }
+
+        function cancelar() {
+            editandoId = null;
+            document.getElementById('titulo').value = '';
+            document.getElementById('texto').value = '';
+            document.getElementById('btnSalvar').textContent = 'Adicionar';
+        }
+
+        async function excluir(id) {
+            if (!confirm('Excluir esta nota?')) return;
+            await fetch(`${API}/${id}`, { method: 'DELETE' });
+            carregar();
+        }
+
+        carregar();
+    </script>
+</body>
+
+</html>
